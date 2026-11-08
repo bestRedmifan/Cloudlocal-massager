@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>CloudLocal Messenger</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">CloudLocal <span>Messenger</span></div>
+    <button id="logoutButton" class="secondary hidden">Sign out</button>
+  </header>
+
+  <main>
+    <section id="signinSection" class="panel signin">
+      <div class="logo">C</div>
+      <h1>Welcome to CloudLocal</h1>
+      <p>Sign in with your Gmail to start messaging.</p>
+
+      <form id="signinForm">
+        <label for="gmailInput">Your Gmail</label>
+        <input
+          id="gmailInput"
+          type="email"
+          placeholder="example@gmail.com"
+          autocomplete="email"
+          required
+        >
+        <button type="submit">Sign in</button>
+      </form>
+
+      <p id="signinStatus" class="status"></p>
+    </section>
+
+    <section id="appSection" class="app hidden">
+      <aside class="panel sidebar">
+        <h2>Your account</h2>
+        <p id="accountEmail" class="account-email"></p>
+
+        <div class="divider"></div>
+
+        <h2>Chat to who?</h2>
+
+        <form id="contactForm">
+          <label for="contactInput">Contact Gmail</label>
+          <input
+            id="contactInput"
+            type="email"
+            placeholder="friend@gmail.com"
+            required
+          >
+          <button type="submit">Find contact</button>
+        </form>
+
+        <p id="contactStatus" class="status"></p>
+
+        <div class="divider"></div>
+        <p class="small-note">
+          No contact list is saved. Enter a Gmail address to start a conversation.
+        </p>
+      </aside>
+
+      <section class="panel chat">
+        <div id="emptyChat" class="empty-chat">
+          <div class="empty-icon">✉</div>
+          <h2>Your conversations</h2>
+          <p>Find someone using their Gmail address.</p>
+        </div>
+
+        <div id="chatContent" class="hidden">
+          <div class="chat-header">
+            <div>
+              <span class="small-note">Chatting with</span>
+              <h2 id="chatEmail"></h2>
+            </div>
+            <button id="closeChatButton" class="secondary">Close</button>
+          </div>
+
+          <div id="messages" class="messages"></div>
+
+          <form id="messageForm" class="message-form">
+            <input
+              id="messageInput"
+              type="text"
+              placeholder="Write a message..."
+              maxlength="4000"
+              autocomplete="off"
+              required
+            >
+            <button type="submit">Send</button>
+          </form>
+
+          <form id="fileForm" class="file-form">
+            <label for="fileInput" class="file-label">＋ Attach file</label>
+            <input id="fileInput" type="file">
+            <button type="submit" class="secondary">Upload</button>
+            <span id="fileStatus" class="status"></span>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    CloudLocal Messenger · Private one-to-one conversations
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
