@@ -1,0 +1,298 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #101827;
+  color: #f1f5f9;
+  font-family: Arial, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.topbar {
+  height: 70px;
+  padding: 0 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #172235;
+  border-bottom: 1px solid #29374c;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.brand span {
+  color: #60a5fa;
+}
+
+main {
+  width: min(1100px, 94%);
+  margin: 45px auto;
+}
+
+.panel {
+  background: #19263a;
+  border: 1px solid #30415b;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.signin {
+  max-width: 420px;
+  margin: 60px auto;
+}
+
+.logo {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  background: #2563eb;
+  border-radius: 16px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 25px;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+p {
+  color: #aebed2;
+  line-height: 1.6;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+input {
+  width: 100%;
+  min-width: 0;
+  padding: 13px;
+  color: white;
+  background: #101b2c;
+  border: 1px solid #40516b;
+  border-radius: 9px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #60a5fa;
+}
+
+button {
+  padding: 12px 17px;
+  color: white;
+  background: #2563eb;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button.secondary {
+  background: #334155;
+}
+
+button.secondary:hover {
+  background: #475569;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.status {
+  min-height: 20px;
+  font-size: 13px;
+  color: #fbbf24;
+  overflow-wrap: anywhere;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 600px;
+}
+
+.sidebar {
+  align-self: start;
+}
+
+.account-email {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.divider {
+  height: 1px;
+  background: #30415b;
+  margin: 23px 0;
+}
+
+.small-note {
+  font-size: 12px;
+  color: #93a4bb;
+}
+
+.chat {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+}
+
+.empty-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 55px;
+  color: #60a5fa;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #30415b;
+}
+
+.chat-header h2 {
+  overflow-wrap: anywhere;
+}
+
+.messages {
+  flex: 1;
+  min-height: 350px;
+  max-height: 440px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 0;
+}
+
+.message {
+  width: fit-content;
+  max-width: 85%;
+  padding: 12px 15px;
+  background: #293951;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.message.mine {
+  align-self: flex-end;
+  background: #1d4ed8;
+}
+
+.message small {
+  display: block;
+  margin-top: 7px;
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+.message-form {
+  flex-direction: row;
+  gap: 8px;
+}
+
+.message-form input {
+  flex: 1;
+}
+
+.file-form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.file-form input {
+  display: none;
+}
+
+.file-label {
+  padding: 10px 13px;
+  background: #334155;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.file-label:hover {
+  background: #475569;
+}
+
+.file-form .status {
+  flex-basis: 100%;
+}
+
+.download-button {
+  margin-top: 8px;
+  display: block;
+  background: #0f766e;
+}
+
+footer {
+  padding: 25px;
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  main {
+    margin: 20px auto;
+  }
+
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .chat {
+    min-height: 550px;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .topbar {
+    padding: 0 4%;
+  }
+}
