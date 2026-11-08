@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudlocal-messenger",
+  "main": "index.js",
+  "compatibility_date": "2026-11-09",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "r2_buckets": [
+    {
+      "binding": "DATA",
+      "bucket_name": "cloudlocal-messages"
+    }
+  ]
+}
