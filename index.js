@@ -1,4 +1,4 @@
-yytyconst encoder = new TextEncoder();
+const encoder = new TextEncoder();
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
