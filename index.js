@@ -1,4 +1,4 @@
-const encoder = new TextEncoder();
+yytyconst encoder = new TextEncoder();
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -98,34 +98,36 @@ async function conversationKey(first, second) {
 }
 
 async function getAccount(env, email) {
-  const object = await env.DATA.get(await accountKey(email));
-  if (!object) return null;
-
-  return object.json();
+  return await env.DB.prepare(
+    "SELECT email, created_at AS createdAt FROM accounts WHERE email = ?"
+  ).bind(email).first();
 }
 
 async function saveMessage(env, conversation, message) {
   const id = crypto.randomUUID();
   const time = Date.now();
 
-  const key = `messages/${conversation}/${time}-${id}.json`;
-
-  await env.DATA.put(key, JSON.stringify({
+  const data = {
     id,
     ...message,
     createdAt: time
-  }), {
-    httpMetadata: {
-      contentType: "application/json"
-    }
-  });
+  };
+
+  await env.DB.prepare(
+    "INSERT INTO messages (id, conversation_id, created_at, data_json) VALUES (?, ?, ?, ?)"
+  ).bind(
+    id,
+    conversation,
+    time,
+    JSON.stringify(data)
+  ).run();
 }
 
 async function handleAPI(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  if (!env.DATA) return json({ error: "R2 binding DATA is missing." }, 500);
+  if (!env.DB) return json({ error: "D1 binding DB is missing." }, 500);
 
   if (!env.AUTH_SECRET) {
     return json({ error: "AUTH_SECRET is not configured." }, 500);
@@ -151,12 +153,9 @@ async function handleAPI(request, env) {
         createdAt: Date.now()
       };
 
-      await env.DATA.put(
-        await accountKey(email),
-        JSON.stringify(account),
-        { httpMetadata: { contentType: "application/json" } }
-      );
-    }
+      await env.DB.prepare(
+  "INSERT INTO accounts (email, created_at) VALUES (?, ?) ON CONFLICT(email) DO NOTHING"
+).bind(email, account.createdAt).run();
 
     const token = await createToken(email, env.AUTH_SECRET);
 
@@ -211,26 +210,15 @@ async function handleAPI(request, env) {
       return json({ error: "Invalid contact." }, 400);
     }
 
-    if (!await getAccount(env, other)) {
-      return json({ error: "Error 404: Contact not found." }, 404);
-    }
+    if (!a
 
-    const conversation = await conversationKey(user, other);
+    const listed = await env.DB.prepare(
+  "SELECT data_json FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 1000"
+).bind(conversation).all();
 
-    const listed = await env.DATA.list({
-      prefix: `messages/${conversation}/`,
-      limit: 1000
-    });
-
-    const messages = [];
-
-    for (const item of listed.objects) {
-      const object = await env.DATA.get(item.key);
-      if (object) messages.push(await object.json());
-    }
-
-    messages.sort((a, b) => a.createdAt - b.createdAt);
-
+const messages = listed.results.map(item =>
+  JSON.parse(item.data_json)
+);
     return json({ messages });
   }
 
@@ -281,12 +269,78 @@ async function handleAPI(request, env) {
     if (!(file instanceof File) || !file.size) {
       return json({ error: "Select a file." }, 400);
     }
-
-    if (file.size > 10 * 1024 * 1024) {
-      return json({ error: "Maximum file size is 10 MB." }, 413);
-    }
-
+      if (file.size > 1.8 * 1024 * 1024) {
+  return json({ error: "Maximum file size is 1.8 MB." }, 413);
+      }
     const conversation = await conversationKey(user, other);
+const id = crypto.randomUUID();
+
+const safeName = file.name.replace(/[\\/"\r\n]/g, "_").slice(0, 150);
+const contentType = file.type || "application/octet-stream";
+const fileData = new Uint8Array(await file.arrayBuffer());
+
+const chunkSize = 256 * 1024;
+const createdAt = Date.now();
+const messageId = crypto.randomUUID();
+
+const messageData = {
+  id: messageId,
+  from: user,
+  to: other,
+  type: "file",
+  file: {
+    id,
+    name: safeName,
+    size: file.size,
+    contentType
+  },
+  createdAt
+};
+
+const statements = [
+  env.DB.prepare(
+    "INSERT INTO files (id, conversation_id, from_email, to_email, name, content_type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(
+    id,
+    conversation,
+    user,
+    other,
+    safeName,
+    contentType,
+    file.size,
+    createdAt
+  ),
+
+  env.DB.prepare(
+    "INSERT INTO messages (id, conversation_id, created_at, data_json) VALUES (?, ?, ?, ?)"
+  ).bind(
+    messageId,
+    conversation,
+    createdAt,
+    JSON.stringify(messageData)
+  )
+];
+
+for (
+  let offset = 0, index = 0;
+  offset < fileData.length;
+  offset += chunkSize, index++
+) {
+  statements.push(
+    env.DB.prepare(
+      "INSERT INTO file_chunks (file_id, chunk_index, data) VALUES (?, ?, ?)"
+    ).bind(
+      id,
+      index,
+      fileData.slice(offset, offset + chunkSize)
+    )
+  );
+}
+
+await env.DB.batch(statements);
+
+return json({ success: true });
+    
     const id = crypto.randomUUID();
 
     const safeName = file.name.replace(/[\\/"\r\n]/g, "_").slice(0, 150);
@@ -330,54 +384,45 @@ async function handleAPI(request, env) {
     }
 
     const conversation = await conversationKey(user, other);
-    const key = `uploads/${conversation}/${id}`;
 
-    const object = await env.DATA.get(key);
+const metadata = await env.DB.prepare(
+  "SELECT * FROM files WHERE id = ? AND conversation_id = ?"
+).bind(id, conversation).first();
 
-    if (!object) {
-      return json({ error: "File not found." }, 404);
-    }
-
-    const metadata = object.customMetadata || {};
-
-    if (metadata.from !== user && metadata.to !== user) {
-      return json({ error: "Access denied." }, 403);
-    }
-
-    const filename = metadata.name || "download";
-
-    return new Response(object.body, {
-      headers: {
-        "Content-Type": object.httpMetadata?.contentType ||
-          "application/octet-stream",
-        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
-        "Cache-Control": "private, no-store"
-      }
-    });
-  }
-
-  return json({ error: "API endpoint not found." }, 404);
+if (!metadata) {
+  return json({ error: "File not found." }, 404);
 }
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+if (metadata.from_email !== user && metadata.to_email !== user) {
+  return json({ error: "Access denied." }, 403);
+}
 
-    if (url.pathname.startsWith("/api/")) {
-      try {
-        return await handleAPI(request, env);
-      } catch (error) {
-        return json({
-          error: "Internal server error.",
-          detail: "Check Worker logs."
-        }, 500);
-      }
-    }
+const chunks = await env.DB.prepare(
+  "SELECT data FROM file_chunks WHERE file_id = ? ORDER BY chunk_index ASC"
+).bind(id).all();
 
-    if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
-    }
+const bytes = new Uint8Array(metadata.size);
+let offset = 0;
 
-    return new Response("CloudLocal Messenger API is running.");
+for (const chunk of chunks.results) {
+  const data = new Uint8Array(chunk.data);
+
+  if (offset + data.length > bytes.length) {
+    return json({ error: "Invalid file data." }, 500);
   }
-};
+
+  bytes.set(data, offset);
+  offset += data.length;
+}
+
+if (offset !== metadata.size) {
+  return json({ error: "File data is incomplete." }, 500);
+}
+
+return new Response(bytes, {
+  headers: {
+    "Content-Type": metadata.content_type,
+    "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(metadata.name)}`,
+    "Cache-Control": "private, no-store"
+  }
+});
