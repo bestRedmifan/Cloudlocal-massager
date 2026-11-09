@@ -9,10 +9,11 @@
     "binding": "ASSETS"
   },
 
-  "r2_buckets": [
-    {
-      "binding": "DATA",
-      "bucket_name": "cloudlocal-messages"
-    }
-  ]
+  "d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "cloudlocal-messages",
+    "database_id": "a4bda3df-2b8d-4b57-9ee4-a9ce9f326705"
+  }
+]
 }
